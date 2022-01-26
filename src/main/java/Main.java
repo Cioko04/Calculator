@@ -1,7 +1,7 @@
 public class Main {
     public static void main(String[] args) {
-        Calculator calculator = new Calculator();
-        System.out.println(calculator.calculate("-8+2-1"));
+        Interpreter interpreter = new Interpreter();
+        System.out.println(interpreter.interpret("2+2-6/2"));
 
 
     }

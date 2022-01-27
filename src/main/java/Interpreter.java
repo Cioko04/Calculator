@@ -32,21 +32,13 @@ public class Interpreter {
     }
 
     private String choseAction(List<String> operands, List<String> operators, int index) {
-        String replacmentExpression = "";
-        switch (operators.get(index)) {
-            case "*":
-                replacmentExpression = calculator.multiplyNumbers(operands, operators, index);
-                break;
-            case "/":
-                replacmentExpression = calculator.divideNumbers(operands, operators, index);
-                break;
-            case "+":
-                replacmentExpression = calculator.addNumbers(operands, operators, index);
-                break;
-            case "-":
-                replacmentExpression = calculator.subNumbers(operands, operators, index);
-                break;
-        }
+        String replacmentExpression = switch (operators.get(index)) {
+            case "*" -> calculator.multiplyNumbers(operands, index);
+            case "/" -> calculator.divideNumbers(operands, index);
+            case "+" -> calculator.addNumbers(operands, index);
+            case "-" -> calculator.subNumbers(operands, index);
+            default -> "";
+        };
         return modifyExpression(operands, operators, index, replacmentExpression);
     }
 
@@ -55,7 +47,7 @@ public class Interpreter {
         operands.remove(index - 1);
         operators.remove(index);
         operators.remove(0);
-        return updateExpression(operands,operators);
+        return updateExpression(operands, operators);
     }
 
     private String updateExpression(List<String> operands, List<String> operators) {
@@ -69,14 +61,6 @@ public class Interpreter {
 
 
     public List<String> getOperands(String inputExpression) {
-        return checkFirstValue(inputExpression);
-    }
-
-    public List<String> getOperators(String inputExpression) {
-        return new ArrayList<>(List.of(inputExpression.split("[0-9]+")));
-    }
-
-    private List<String> checkFirstValue(String inputExpression) {
         List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*-]")));
         if (operands.get(0).equals("")) {
             operands.remove(0);
@@ -84,4 +68,9 @@ public class Interpreter {
         }
         return operands;
     }
+
+    public List<String> getOperators(String inputExpression) {
+        return new ArrayList<>(List.of(inputExpression.split("[0-9]+")));
+    }
+
 }

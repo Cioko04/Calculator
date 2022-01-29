@@ -3,17 +3,23 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Interpreter {
-    private final Calculator calculator;
+    private final Calculator calculator = Calculator.getInstance();
+    private static Interpreter instance;
 
-    public Interpreter() {
-        calculator = new Calculator();
+    public static Interpreter getInstance() {
+        if (instance == null) {
+            instance = new Interpreter();
+        }
+        return instance;
+    }
+
+    private Interpreter() {
     }
 
     public String interpret(String inputExpression) {
         List<String> operands = getOperands(inputExpression);
         List<String> operators = getOperators(inputExpression);
         if (operands.size() > 1) {
-            System.out.println(inputExpression);
             return interpret(choseAction(operands, operators, getIndex(operators)));
         } else return inputExpression;
 

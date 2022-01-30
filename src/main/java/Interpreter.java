@@ -3,33 +3,20 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Interpreter {
-    private final Calculator calculator = Calculator.getInstance();
-    private static Interpreter instance;
-
-    public static Interpreter getInstance() {
-        if (instance == null) {
-            instance = new Interpreter();
-        }
-        return instance;
-    }
-
-    private Interpreter() {
-    }
+    private final Calculator calculator = new Calculator();
 
     public String interpret(String inputExpression) {
         List<String> operands = getOperands(inputExpression);
         List<String> operators = getOperators(inputExpression);
         if (operands.size() > 1) {
-            return interpret(choseAction(operands, operators, getIndex(operators)));
+            return interpret(chooseAction(operands, operators, getIndexOfOperator(operators)));
         } else return inputExpression;
 
     }
 
-    private int getIndex(List<String> operators) {
+    private int getIndexOfOperator(List<String> operators) {
         int index = 0;
-        if (operators.contains("/") && operators.contains("*")) {
-            index = Math.min(operators.indexOf("*"), operators.indexOf("/"));
-        } else if (operators.contains("/")) {
+        if (operators.contains("/")) {
             index = operators.indexOf("/");
         } else if (operators.contains("*")) {
             index = operators.indexOf("*");
@@ -43,7 +30,7 @@ public class Interpreter {
         return index;
     }
 
-    private String choseAction(List<String> operands, List<String> operators, int index) {
+    private String chooseAction(List<String> operands, List<String> operators, int index) {
         String replacementExpression = switch (operators.get(index)) {
             case "*" -> calculator.multiplyNumbers(operands, index);
             case "/" -> calculator.divideNumbers(operands, index);

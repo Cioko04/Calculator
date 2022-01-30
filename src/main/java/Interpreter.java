@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class Interpreter {
     private final Calculator calculator = new Calculator();
@@ -9,8 +8,15 @@ public class Interpreter {
         List<String> operands = getOperands(inputExpression);
         List<String> operators = getOperators(inputExpression);
         if (operands.size() > 1) {
-            return interpret(chooseAction(operands, operators, getIndexOfOperator(operators)));
+            return interpret(updateExpression(operands, operators, getIndexOfOperator(operators), inputExpression));
         } else return inputExpression;
+
+    }
+
+    private String updateExpression(List<String> operands, List<String> operators, int index, String inputExpression) {
+        String expressionToReplace = getExpressionToReplace(operands, operators, index);
+        String replacementExpression = getReplacementExpression(operands, operators, index);
+        return inputExpression.replace(expressionToReplace, replacementExpression);
 
     }
 
@@ -30,34 +36,19 @@ public class Interpreter {
         return index;
     }
 
-    private String chooseAction(List<String> operands, List<String> operators, int index) {
-        String replacementExpression = switch (operators.get(index)) {
+    private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
+        return switch (operators.get(index)) {
             case "*" -> calculator.multiplyNumbers(operands, index);
             case "/" -> calculator.divideNumbers(operands, index);
             case "+" -> calculator.addNumbers(operands, index);
             case "-" -> calculator.subNumbers(operands, index);
             default -> "";
         };
-        return modifyExpression(operands, operators, index, replacementExpression);
     }
 
-    private String modifyExpression(List<String> operands, List<String> operators, int index, String replacementExpression) {
-        operands.set(index, replacementExpression);
-        operands.remove(index - 1);
-        operators.remove(index);
-        operators.remove(0);
-        return updateExpression(operands, operators);
+    private String getExpressionToReplace(List<String> operands, List<String> operators, int index) {
+        return operands.get(index - 1) + operators.get(index) + operands.get(index);
     }
-
-    private String updateExpression(List<String> operands, List<String> operators) {
-        StringBuilder expressionBuild = new StringBuilder();
-        expressionBuild.append(operands.get(0));
-        Stream.iterate(0, n -> n + 1)
-                .limit(operators.size())
-                .forEach(x -> expressionBuild.append(operators.get(x)).append(operands.get(x + 1)));
-        return expressionBuild.toString();
-    }
-
 
     public List<String> getOperands(String inputExpression) {
         List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*-]")));
@@ -69,7 +60,7 @@ public class Interpreter {
     }
 
     public List<String> getOperators(String inputExpression) {
-        return new ArrayList<>(List.of(inputExpression.split("[0-9]+")));
+        return new ArrayList<>(List.of(inputExpression.split("[0-9]+[.]*[0-9]*")));
     }
 
 }

@@ -7,22 +7,22 @@ public class Calculator {
     }
 
     public String addNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) + Integer.parseInt(operands.get(index)));
+        return String.valueOf(Double.parseDouble(operands.get(index - 1)) + Double.parseDouble(operands.get(index)));
 
     }
 
     public String subNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) - Integer.parseInt(operands.get(index)));
+        return String.valueOf(Double.parseDouble(operands.get(index - 1)) - Double.parseDouble(operands.get(index)));
 
     }
 
     public String multiplyNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) * Integer.parseInt(operands.get(index)));
+        return String.valueOf(Double.parseDouble(operands.get(index - 1)) * Double.parseDouble(operands.get(index)));
 
     }
 
     public String divideNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) / Integer.parseInt(operands.get(index)));
+        return String.valueOf(Double.parseDouble(operands.get(index - 1)) / Double.parseDouble(operands.get(index)));
 
     }
 }

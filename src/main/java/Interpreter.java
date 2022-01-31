@@ -5,19 +5,32 @@ public class Interpreter {
     private final Calculator calculator = new Calculator();
 
     public String interpret(String inputExpression) {
-        List<String> operands = getOperands(inputExpression);
-        List<String> operators = getOperators(inputExpression);
-        if (operands.size() > 1) {
-            return interpret(updateExpression(operands, operators, getIndexOfOperator(operators), inputExpression));
-        } else return inputExpression;
+        String expressionToReplace;
+        String replacementExpression;
+        if (inputExpression.contains("(")) {
+            expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
+            replacementExpression = interpret(getExpressionInBracket(inputExpression));
+            return interpret(updateExpression(expressionToReplace,replacementExpression,inputExpression));
+        } else {
+            List<String> operands = getOperands(inputExpression);
+            List<String> operators = getOperators(inputExpression);
+            if (operands.size() > 1) {
+                expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
+                replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
+                return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
+            } else return inputExpression;
+        }
 
     }
 
-    private String updateExpression(List<String> operands, List<String> operators, int index, String inputExpression) {
-        String expressionToReplace = getExpressionToReplace(operands, operators, index);
-        String replacementExpression = getReplacementExpression(operands, operators, index);
+    private String updateExpression(String expressionToReplace, String replacementExpression, String inputExpression) {
         return inputExpression.replace(expressionToReplace, replacementExpression);
+    }
 
+    private String getExpressionInBracket(String inputExpression) {
+        return inputExpression.substring(
+                inputExpression.lastIndexOf("(") + 1
+                , inputExpression.indexOf(")", inputExpression.lastIndexOf("(")));
     }
 
     private int getIndexOfOperator(List<String> operators) {
@@ -50,7 +63,7 @@ public class Interpreter {
         return operands.get(index - 1) + operators.get(index) + operands.get(index);
     }
 
-    public List<String> getOperands(String inputExpression) {
+    private List<String> getOperands(String inputExpression) {
         List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*-]")));
         if (operands.get(0).equals("")) {
             operands.remove(0);
@@ -59,7 +72,7 @@ public class Interpreter {
         return operands;
     }
 
-    public List<String> getOperators(String inputExpression) {
+    private List<String> getOperators(String inputExpression) {
         return new ArrayList<>(List.of(inputExpression.split("[0-9]+[.]*[0-9]*")));
     }
 

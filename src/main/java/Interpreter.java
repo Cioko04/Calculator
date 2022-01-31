@@ -8,9 +8,10 @@ public class Interpreter {
         String expressionToReplace;
         String replacementExpression;
         if (inputExpression.contains("(")) {
+            inputExpression = addMultiplySign(inputExpression);
             expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
             replacementExpression = interpret(getExpressionInBracket(inputExpression));
-            return interpret(updateExpression(expressionToReplace,replacementExpression,inputExpression));
+            return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
         } else {
             List<String> operands = getOperands(inputExpression);
             List<String> operators = getOperators(inputExpression);
@@ -21,6 +22,21 @@ public class Interpreter {
             } else return inputExpression;
         }
 
+    }
+
+    private String addMultiplySign(String inputExpression) {
+        inputExpression = inputExpression.replace(")(", ")*(");
+        inputExpression = inputExpression.replace("0(", "0*(");
+        inputExpression = inputExpression.replace("1(", "1*(");
+        inputExpression = inputExpression.replace("2(", "2*(");
+        inputExpression = inputExpression.replace("3(", "3*(");
+        inputExpression = inputExpression.replace("4(", "4*(");
+        inputExpression = inputExpression.replace("5(", "5*(");
+        inputExpression = inputExpression.replace("6(", "6*(");
+        inputExpression = inputExpression.replace("7(", "7*(");
+        inputExpression = inputExpression.replace("8(", "8*(");
+        inputExpression = inputExpression.replace("9(", "9*(");
+        return inputExpression;
     }
 
     private String updateExpression(String expressionToReplace, String replacementExpression, String inputExpression) {

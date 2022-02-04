@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Interpreter {
     private final Calculator calculator = new Calculator();
@@ -7,14 +9,21 @@ public class Interpreter {
     public String interpret(String inputExpression) {
         String expressionToReplace;
         String replacementExpression;
+
         if (inputExpression.contains("(")) {
             inputExpression = addMultiplySign(inputExpression);
             expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
             replacementExpression = interpret(getExpressionInBracket(inputExpression));
             return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
         } else {
-            List<String> operands = getOperands(inputExpression);
             List<String> operators = getOperators(inputExpression);
+            List<String> operands = getOperands(inputExpression);
+            System.out.println(inputExpression);
+            operands.forEach(x -> System.out.printf(x + " "));
+            System.out.println();
+            operators.forEach(x -> System.out.printf(x + " "));
+            System.out.println();
+            System.out.println(getIndexOfOperator(operators));
             if (operands.size() > 1) {
                 expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
                 replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
@@ -51,7 +60,9 @@ public class Interpreter {
 
     private int getIndexOfOperator(List<String> operators) {
         int index = 0;
-        if (operators.contains("/")) {
+        if (operators.contains("^")) {
+            index = operators.indexOf("^");
+        } else if (operators.contains("/")) {
             index = operators.indexOf("/");
         } else if (operators.contains("*")) {
             index = operators.indexOf("*");
@@ -60,13 +71,14 @@ public class Interpreter {
         } else if (operators.contains("+")) {
             index = operators.indexOf("+");
         } else if (operators.contains("-")) {
-            index = operators.indexOf("-") > 0 ? operators.indexOf("-") : 1;
+            index = operators.indexOf("-");
         }
         return index;
     }
 
     private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
         return switch (operators.get(index)) {
+            case "^" -> calculator.powerNumbers(operands, index);
             case "*" -> calculator.multiplyNumbers(operands, index);
             case "/" -> calculator.divideNumbers(operands, index);
             case "+" -> calculator.addNumbers(operands, index);
@@ -76,20 +88,26 @@ public class Interpreter {
     }
 
     private String getExpressionToReplace(List<String> operands, List<String> operators, int index) {
-        return operands.get(index - 1) + operators.get(index) + operands.get(index);
+        return operands.get(index) + operators.get(index) + operands.get(index+1);
     }
 
     private List<String> getOperands(String inputExpression) {
-        List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*-]")));
-        if (operands.get(0).equals("")) {
-            operands.remove(0);
-            operands.set(0, "-" + operands.get(0));
+        List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*^-]")));
+        for (int i = 0; i < operands.size(); i++) {
+            if (operands.get(i).isEmpty()){
+                operands.remove(i);
+                operands.set(i,"-" + operands.get(i));
+            }
         }
         return operands;
     }
 
     private List<String> getOperators(String inputExpression) {
-        return new ArrayList<>(List.of(inputExpression.split("[0-9]+[.]*[0-9]*")));
+        List<String> operators = Arrays.stream(new ArrayList<>(List.of(inputExpression.split("[0-9]+[.0-9]*")))
+                .stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining()).split("")).toList();
+        return new ArrayList<>(operators);
     }
 
 }

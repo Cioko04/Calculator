@@ -1,6 +1,7 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Interpreter {
@@ -15,22 +16,27 @@ public class Interpreter {
             expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
             replacementExpression = interpret(getExpressionInBracket(inputExpression));
             return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
+        } else if (getNumberToSquare(inputExpression) != null) {
+            expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
+            replacementExpression = calculator.squareNumbers(getNumberToSquare(inputExpression));
+            return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
         } else {
-            List<String> operators = getOperators(inputExpression);
             List<String> operands = getOperands(inputExpression);
-            System.out.println(inputExpression);
-            operands.forEach(x -> System.out.printf(x + " "));
-            System.out.println();
-            operators.forEach(x -> System.out.printf(x + " "));
-            System.out.println();
-            System.out.println(getIndexOfOperator(operators));
             if (operands.size() > 1) {
+                List<String> operators = getOperators(inputExpression);
                 expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
                 replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
                 return interpret(updateExpression(expressionToReplace, replacementExpression, inputExpression));
             } else return inputExpression;
         }
+    }
 
+    private String getNumberToSquare(String inputExpression) {
+        Pattern pattern = Pattern.compile("sqrt[0-9]+[.0-9]*");
+        Matcher matcher = pattern.matcher(inputExpression);
+        return matcher.find() ?
+                inputExpression.substring(matcher.start(), matcher.end()).replace("sqrt", "")
+                : null;
     }
 
     private String addMultiplySign(String inputExpression) {
@@ -66,7 +72,7 @@ public class Interpreter {
             index = operators.indexOf("/");
         } else if (operators.contains("*")) {
             index = operators.indexOf("*");
-        } else if (operators.contains("+") && operators.contains("-") && operators.indexOf("-") != 0) {
+        } else if (operators.contains("+") && operators.contains("-")) {
             index = Math.min(operators.indexOf("+"), operators.indexOf("-"));
         } else if (operators.contains("+")) {
             index = operators.indexOf("+");
@@ -88,26 +94,34 @@ public class Interpreter {
     }
 
     private String getExpressionToReplace(List<String> operands, List<String> operators, int index) {
-        return operands.get(index) + operators.get(index) + operands.get(index+1);
+        return operands.get(index - 1) + operators.get(index) + operands.get(index);
     }
 
     private List<String> getOperands(String inputExpression) {
         List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*^-]")));
         for (int i = 0; i < operands.size(); i++) {
-            if (operands.get(i).isEmpty()){
+            if (operands.get(i).isEmpty()) {
                 operands.remove(i);
-                operands.set(i,"-" + operands.get(i));
+                operands.set(i, "-" + operands.get(i));
             }
         }
         return operands;
     }
 
     private List<String> getOperators(String inputExpression) {
-        List<String> operators = Arrays.stream(new ArrayList<>(List.of(inputExpression.split("[0-9]+[.0-9]*")))
-                .stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining()).split("")).toList();
-        return new ArrayList<>(operators);
+        List<String> operators = new ArrayList<>(List.of(inputExpression.split("[0-9]+[.0-9]*")));
+        operators.set(0, "");
+        operators = new ArrayList<>(
+                List.of(
+                        operators
+                                .stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining())
+                                .split("")
+                )
+        );
+        operators.add(0, "");
+        return operators;
     }
 
 }

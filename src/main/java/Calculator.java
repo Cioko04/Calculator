@@ -1,37 +1,37 @@
-import java.util.List;
+
+import java.util.Scanner;
 
 public class Calculator {
+    ErrorHandler errorHandler = new ErrorHandler();
 
-    public String calculate(String inputExpression) {
-        return new Interpreter().interpret(inputExpression);
+    public String calculate() {
+        return new Interpreter().interpret(new Scanner(System.in).nextLine().replace(" ", ""));
     }
 
-    public String addNumbers(List<String> operands, int index) {
-        return String.valueOf(Double.parseDouble(operands.get(index-1)) + Double.parseDouble(operands.get(index)));
-
+    public String addNumbers(double a, double b) {
+        return String.valueOf(a + b);
     }
 
-    public String subNumbers(List<String> operands, int index) {
-        return String.valueOf(Double.parseDouble(operands.get(index-1)) - Double.parseDouble(operands.get(index)));
-
-    }
-
-    public String multiplyNumbers(List<String> operands, int index) {
-        return String.valueOf(Double.parseDouble(operands.get(index-1)) * Double.parseDouble(operands.get(index)));
+    public String subNumbers(double a, double b) {
+        return String.valueOf(a - b);
 
     }
 
-    public String divideNumbers(List<String> operands, int index) {
-        return String.valueOf(Double.parseDouble(operands.get(index-1)) / Double.parseDouble(operands.get(index)));
+    public String multiplyNumbers(double a, double b) {
+        return String.valueOf(a * b);
 
     }
 
-    public String powerNumbers(List<String> operands, int index) {
-        return String.valueOf(Math.pow(Double.parseDouble(operands.get(index-1)),
-                Double.parseDouble(operands.get(index))));
+    public String divideNumbers(double a, double b) {
+        return String.valueOf(a / errorHandler.checkDivider(b));
+
+    }
+
+    public String powerNumbers(double a, double b) {
+        return String.valueOf(Math.pow(a, b));
     }
 
     public String squareNumbers(String number) {
-        return String.valueOf(Math.sqrt(Double.parseDouble(number)));
+        return String.valueOf(Math.sqrt(errorHandler.checkSqrt(Double.parseDouble(number))));
     }
 }

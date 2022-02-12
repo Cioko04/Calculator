@@ -1,40 +1,37 @@
-import java.util.List;
+
+import java.util.Scanner;
 
 public class Calculator {
-    private static Calculator instance;
+    ErrorHandler errorHandler = new ErrorHandler();
 
-    public static Calculator getInstance() {
-        if (instance == null) {
-            instance = new Calculator();
-        }
-        return instance;
+    public String calculate() {
+        return new Interpreter().interpret(new Scanner(System.in).nextLine().replace(" ", ""));
     }
 
-    private Calculator() {
-
+    public String addNumbers(double a, double b) {
+        return String.valueOf(a + b);
     }
 
-    public String calculate(String inputExpression) {
-        return Interpreter.getInstance().interpret(inputExpression);
-    }
-
-    public String addNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) + Integer.parseInt(operands.get(index)));
+    public String subNumbers(double a, double b) {
+        return String.valueOf(a - b);
 
     }
 
-    public String subNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) - Integer.parseInt(operands.get(index)));
+    public String multiplyNumbers(double a, double b) {
+        return String.valueOf(a * b);
 
     }
 
-    public String multiplyNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) * Integer.parseInt(operands.get(index)));
+    public String divideNumbers(double a, double b) {
+        return String.valueOf(a / errorHandler.checkDivider(b));
 
     }
 
-    public String divideNumbers(List<String> operands, int index) {
-        return String.valueOf(Integer.parseInt(operands.get(index - 1)) / Integer.parseInt(operands.get(index)));
+    public String powerNumbers(double a, double b) {
+        return String.valueOf(Math.pow(a, b));
+    }
 
+    public String squareNumbers(String number) {
+        return String.valueOf(Math.sqrt(errorHandler.checkSqrt(Double.parseDouble(number))));
     }
 }

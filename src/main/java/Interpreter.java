@@ -1,88 +1,149 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Interpreter {
-    private final Calculator calculator = Calculator.getInstance();
-    private static Interpreter instance;
-
-    public static Interpreter getInstance() {
-        if (instance == null) {
-            instance = new Interpreter();
-        }
-        return instance;
-    }
-
-    private Interpreter() {
-    }
+    private final Calculator calculator = new Calculator();
+    private final Agregater agregater = Agregater.getInstance();
+    private final ErrorHandler errorHandler = new ErrorHandler();
+    private String expressionToReplace;
+    private String replacementExpression;
 
     public String interpret(String inputExpression) {
-        List<String> operands = getOperands(inputExpression);
-        List<String> operators = getOperators(inputExpression);
-        if (operands.size() > 1) {
-            return interpret(choseAction(operands, operators, getIndex(operators)));
-        } else return inputExpression;
-
+        if (!inputExpression.contains("=")) {
+            if (inputExpression.contains("(")) {
+                return interpret(doExpressionWithBracket(inputExpression));
+            } else if (getNumberToSquare(inputExpression) != null) {
+                return interpret(doExpressionWithSqrt(inputExpression));
+            } else {
+                List<String> operands = getOperands(inputExpression);
+                if (operands.size() > 1) {
+                    return interpret(doSimpleExpression(inputExpression, operands));
+                } else {
+                    return inputExpression;
+                }
+            }
+        } else {
+            agregater.inputExpression(inputExpression);
+            return calculator.calculate();
+        }
     }
 
-    private int getIndex(List<String> operators) {
+    private String doExpressionWithBracket(String inputExpression) {
+        inputExpression = addMultiplySign(inputExpression);
+        expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
+        replacementExpression = interpret(getExpressionInBracket(inputExpression));
+        return updateExpression(expressionToReplace, replacementExpression, inputExpression);
+    }
+
+    private String getExpressionInBracket(String inputExpression) {
+        return inputExpression.substring(
+                inputExpression.lastIndexOf("(") + 1
+                , inputExpression.indexOf(")", inputExpression.lastIndexOf("(")));
+    }
+
+    private String doExpressionWithSqrt(String inputExpression) {
+        expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
+        replacementExpression = calculator.squareNumbers(getNumberToSquare(inputExpression));
+        return updateExpression(expressionToReplace, replacementExpression, inputExpression);
+    }
+
+    private String doSimpleExpression(String inputExpression, List<String> operands) {
+        List<String> operators = getOperators(inputExpression);
+        expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
+        replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
+        return updateExpression(expressionToReplace, replacementExpression, inputExpression);
+    }
+
+    private String getNumberToSquare(String inputExpression) {
+        Pattern pattern = Pattern.compile("sqrt\\d*.\\d*");
+        Matcher matcher = pattern.matcher(inputExpression);
+        return matcher.find() ?
+                inputExpression.substring(matcher.start(), matcher.end()).replace("sqrt", "")
+                : null;
+    }
+
+    private String addMultiplySign(String inputExpression) {
+        inputExpression = inputExpression.replace(")(", ")*(");
+        inputExpression = inputExpression.replace("0(", "0*(");
+        inputExpression = inputExpression.replace("1(", "1*(");
+        inputExpression = inputExpression.replace("2(", "2*(");
+        inputExpression = inputExpression.replace("3(", "3*(");
+        inputExpression = inputExpression.replace("4(", "4*(");
+        inputExpression = inputExpression.replace("5(", "5*(");
+        inputExpression = inputExpression.replace("6(", "6*(");
+        inputExpression = inputExpression.replace("7(", "7*(");
+        inputExpression = inputExpression.replace("8(", "8*(");
+        inputExpression = inputExpression.replace("9(", "9*(");
+        return inputExpression;
+    }
+
+    private String updateExpression(String expressionToReplace, String replacementExpression, String inputExpression) {
+        return inputExpression.replace(expressionToReplace, replacementExpression);
+    }
+
+    private int getIndexOfOperator(List<String> operators) {
         int index = 0;
-        if (operators.contains("/") && operators.contains("*")) {
-            index = Math.min(operators.indexOf("*"), operators.indexOf("/"));
+        if (operators.contains("^")) {
+            index = operators.indexOf("^");
         } else if (operators.contains("/")) {
             index = operators.indexOf("/");
         } else if (operators.contains("*")) {
             index = operators.indexOf("*");
-        } else if (operators.contains("+") && operators.contains("-") && operators.indexOf("-") != 0) {
+        } else if (operators.contains("+") && operators.contains("-")) {
             index = Math.min(operators.indexOf("+"), operators.indexOf("-"));
         } else if (operators.contains("+")) {
             index = operators.indexOf("+");
         } else if (operators.contains("-")) {
-            index = operators.indexOf("-") > 0 ? operators.indexOf("-") : 1;
+            index = operators.indexOf("-");
         }
         return index;
     }
 
-    private String choseAction(List<String> operands, List<String> operators, int index) {
-        String replacementExpression = switch (operators.get(index)) {
-            case "*" -> calculator.multiplyNumbers(operands, index);
-            case "/" -> calculator.divideNumbers(operands, index);
-            case "+" -> calculator.addNumbers(operands, index);
-            case "-" -> calculator.subNumbers(operands, index);
+    private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
+        double a = errorHandler.tryNumber(operands.get(index - 1));
+        double b = errorHandler.tryNumber(operands.get(index));
+        return switch (operators.get(index)) {
+            case "^" -> calculator.powerNumbers(a, b);
+            case "*" -> calculator.multiplyNumbers(a, b);
+            case "/" -> calculator.divideNumbers(a, b);
+            case "+" -> calculator.addNumbers(a, b);
+            case "-" -> calculator.subNumbers(a, b);
             default -> "";
         };
-        return modifyExpression(operands, operators, index, replacementExpression);
     }
 
-    private String modifyExpression(List<String> operands, List<String> operators, int index, String replacementExpression) {
-        operands.set(index, replacementExpression);
-        operands.remove(index - 1);
-        operators.remove(index);
-        operators.remove(0);
-        return updateExpression(operands, operators);
+    private String getExpressionToReplace(List<String> operands, List<String> operators, int index) {
+        return operands.get(index - 1) + operators.get(index) + operands.get(index);
     }
 
-    private String updateExpression(List<String> operands, List<String> operators) {
-        StringBuilder expressionBuild = new StringBuilder();
-        expressionBuild.append(operands.get(0));
-        Stream.iterate(0, n -> n + 1)
-                .limit(operators.size())
-                .forEach(x -> expressionBuild.append(operators.get(x)).append(operands.get(x + 1)));
-        return expressionBuild.toString();
-    }
-
-
-    public List<String> getOperands(String inputExpression) {
-        List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*-]")));
-        if (operands.get(0).equals("")) {
-            operands.remove(0);
-            operands.set(0, "-" + operands.get(0));
+    private List<String> getOperands(String inputExpression) {
+        List<String> operands = new ArrayList<>(List.of(inputExpression.split("[+/*^-]")));
+        for (int i = 0; i < operands.size(); i++) {
+            if (operands.get(i).isEmpty()) {
+                operands.remove(i);
+                operands.set(i, "-" + operands.get(i));
+            }
         }
         return operands;
     }
 
-    public List<String> getOperators(String inputExpression) {
-        return new ArrayList<>(List.of(inputExpression.split("[0-9]+")));
+    private List<String> getOperators(String inputExpression) {
+        List<String> operators = new ArrayList<>(List.of(inputExpression.split("[\\d\\.w\\w]")));
+        operators.set(0, "");
+        operators = new ArrayList<>(
+                List.of(
+                        operators
+                                .stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining())
+                                .split("")
+                )
+        );
+        operators.add(0, "");
+        return operators;
     }
 
 }

@@ -5,9 +5,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    private final Calculator calculator = new Calculator();
-    private final Agregater agregater = Agregater.getInstance();
-    private final ErrorHandler errorHandler = new ErrorHandler();
+    private static final Calculator calculator = new Calculator();
+    private static final Aggregator agregater = new Aggregator();
+    private static final ErrorHandler errorHandler = new ErrorHandler();
     private String expressionToReplace;
     private String replacementExpression;
 
@@ -21,14 +21,18 @@ public class Interpreter {
                 List<String> operands = getOperands(inputExpression);
                 if (operands.size() > 1) {
                     return interpret(doSimpleExpression(inputExpression, operands));
-                } else {
+                } else if (!Pattern.compile("[a-z]").matcher(inputExpression).find()) {
                     return inputExpression;
+                } else {
+                    return String.valueOf(errorHandler.checkNumber(inputExpression));
                 }
             }
         } else {
             agregater.inputExpression(inputExpression);
             return calculator.calculate();
         }
+
+
     }
 
     private String doExpressionWithBracket(String inputExpression) {
@@ -103,8 +107,8 @@ public class Interpreter {
     }
 
     private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
-        double a = errorHandler.tryNumber(operands.get(index - 1));
-        double b = errorHandler.tryNumber(operands.get(index));
+        double a = errorHandler.checkNumber(operands.get(index - 1));
+        double b = errorHandler.checkNumber(operands.get(index));
         return switch (operators.get(index)) {
             case "^" -> calculator.powerNumbers(a, b);
             case "*" -> calculator.multiplyNumbers(a, b);
@@ -134,12 +138,10 @@ public class Interpreter {
         List<String> operators = new ArrayList<>(List.of(inputExpression.split("[\\d\\.w\\w]")));
         operators.set(0, "");
         operators = new ArrayList<>(
-                List.of(
-                        operators
-                                .stream()
-                                .map(String::valueOf)
-                                .collect(Collectors.joining())
-                                .split("")
+                List.of(operators.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining())
+                        .split("")
                 )
         );
         operators.add(0, "");

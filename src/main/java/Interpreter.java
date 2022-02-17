@@ -5,9 +5,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    private static final Calculator calculator = new Calculator();
-    private static final Aggregator agregater = new Aggregator();
-    private static final ErrorHandler errorHandler = new ErrorHandler();
+    private static final Calculator CALCULATOR = new Calculator();
+    private static final Aggregator AGGREGATOR = new Aggregator();
+    private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
     private String expressionToReplace;
     private String replacementExpression;
 
@@ -24,13 +24,13 @@ public class Interpreter {
                 } else if (!Pattern.compile("[a-z]").matcher(inputExpression).find()) {
                     return inputExpression;
                 } else {
-                    return String.valueOf(errorHandler.checkNumber(inputExpression));
+                    return String.valueOf(ERROR_HANDLER.checkNumber(inputExpression));
                 }
             }
-        } else {
-            agregater.inputExpression(inputExpression);
-            return calculator.calculate();
-        }
+        } else if (Pattern.compile("[a-z]").matcher(inputExpression).find()) {
+            AGGREGATOR.addInputExpression(inputExpression);
+            return CALCULATOR.calculate();
+        } else return "This isn't right value!";
 
 
     }
@@ -50,7 +50,7 @@ public class Interpreter {
 
     private String doExpressionWithSqrt(String inputExpression) {
         expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
-        replacementExpression = calculator.squareNumbers(getNumberToSquare(inputExpression));
+        replacementExpression = CALCULATOR.squareNumbers(getNumberToSquare(inputExpression));
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
     }
 
@@ -107,14 +107,14 @@ public class Interpreter {
     }
 
     private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
-        double a = errorHandler.checkNumber(operands.get(index - 1));
-        double b = errorHandler.checkNumber(operands.get(index));
+        double a = ERROR_HANDLER.checkNumber(operands.get(index - 1));
+        double b = ERROR_HANDLER.checkNumber(operands.get(index));
         return switch (operators.get(index)) {
-            case "^" -> calculator.powerNumbers(a, b);
-            case "*" -> calculator.multiplyNumbers(a, b);
-            case "/" -> calculator.divideNumbers(a, b);
-            case "+" -> calculator.addNumbers(a, b);
-            case "-" -> calculator.subNumbers(a, b);
+            case "^" -> CALCULATOR.powerNumbers(a, b);
+            case "*" -> CALCULATOR.multiplyNumbers(a, b);
+            case "/" -> CALCULATOR.divideNumbers(a, b);
+            case "+" -> CALCULATOR.addNumbers(a, b);
+            case "-" -> CALCULATOR.subNumbers(a, b);
             default -> "";
         };
     }
@@ -132,9 +132,12 @@ public class Interpreter {
             }
         }
         return operands;
+
+
     }
 
     private List<String> getOperators(String inputExpression) {
+
         List<String> operators = new ArrayList<>(List.of(inputExpression.split("[\\d\\.w\\w]")));
         operators.set(0, "");
         operators = new ArrayList<>(

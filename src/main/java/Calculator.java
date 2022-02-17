@@ -4,16 +4,16 @@ import java.math.RoundingMode;
 import java.util.Scanner;
 
 public class Calculator {
-    private static final ErrorHandler errorHandler = new ErrorHandler();
-    private static final Interpreter interpreter = new Interpreter();
+    private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
+    private static final Interpreter INTERPRETER = new Interpreter();
 
 
     public String calculate() {
         String inputExpression;
         do {
             inputExpression = new Scanner(System.in).nextLine().replace(" ", "");
-        } while (errorHandler.checkExpression(inputExpression));
-        return interpreter.interpret(inputExpression);
+        } while (!ERROR_HANDLER.checkExpression(inputExpression));
+        return INTERPRETER.interpret(inputExpression);
     }
 
     public String addNumbers(double a, double b) {
@@ -29,7 +29,7 @@ public class Calculator {
     }
 
     public String divideNumbers(double a, double b) {
-        return String.valueOf(BigDecimal.valueOf(a).divide(BigDecimal.valueOf(errorHandler.checkDivider(b)), RoundingMode.HALF_DOWN));
+        return String.valueOf(BigDecimal.valueOf(a).divide(BigDecimal.valueOf(ERROR_HANDLER.checkDivider(b)), RoundingMode.HALF_DOWN));
     }
 
     public String powerNumbers(double a, double b) {
@@ -37,6 +37,6 @@ public class Calculator {
     }
 
     public String squareNumbers(String number) {
-        return String.valueOf(BigDecimal.valueOf(errorHandler.checkSqrt(Double.parseDouble(number))).sqrt(MathContext.UNLIMITED));
+        return String.valueOf(BigDecimal.valueOf(ERROR_HANDLER.checkSqrt(Double.parseDouble(number))).sqrt(MathContext.UNLIMITED));
     }
 }

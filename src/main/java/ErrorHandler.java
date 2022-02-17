@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ErrorHandler extends Exception{
-   private static final Aggregator agregater = new Aggregator();
+   private static final Aggregator AGGREGATOR = new Aggregator();
 
     public double checkNumber(String numberToCheck) {
         double number;
@@ -12,7 +12,7 @@ public class ErrorHandler extends Exception{
             number = Double.parseDouble(numberToCheck);
         } catch (IllegalArgumentException exception) {
             try {
-                number = Double.parseDouble(agregater.getUserAssignation().get(numberToCheck));
+                number = Double.parseDouble(AGGREGATOR.getUserAssignation().get(numberToCheck));
             } catch (NullPointerException pointerException) {
                 System.out.println("There is no number assigned to this variable!\n" +
                         "Please enter value: ");
@@ -70,12 +70,17 @@ public class ErrorHandler extends Exception{
         return number;
     }
     public boolean checkExpression(String inputExpression){
-        Pattern pattern = Pattern.compile("[^a-z0-9()+/*=-]");
-        Matcher matcher = pattern.matcher(inputExpression);
-        if (matcher.find()) {
+        Pattern checkRighSign = Pattern.compile("[^a-z0-9().+/*=-]");
+        Pattern checkDuplicate = Pattern.compile("[.+/*=-]{2,}");
+        Pattern checkSignAppear = Pattern.compile("[a-z0-9]+");
+        boolean isCorrectExpression = true;
+        if (checkRighSign.matcher(inputExpression).find()
+                || checkDuplicate.matcher(inputExpression).find()
+                || !checkSignAppear.matcher(inputExpression).find()) {
             System.out.println("Given expression doesn't match!\n" +
                     "Please correct it!");
+            isCorrectExpression = false;
         }
-        return matcher.find();
+        return isCorrectExpression;
     }
 }

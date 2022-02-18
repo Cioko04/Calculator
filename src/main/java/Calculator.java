@@ -1,19 +1,14 @@
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Scanner;
 
 public class Calculator {
     private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
-    private static final Interpreter INTERPRETER = new Interpreter();
 
 
     public String calculate() {
-        String inputExpression;
-        do {
-            inputExpression = new Scanner(System.in).nextLine().replace(" ", "");
-        } while (!ERROR_HANDLER.checkExpression(inputExpression));
-        return INTERPRETER.interpret(inputExpression);
+            return ERROR_HANDLER.getExpression();
+
     }
 
     public String addNumbers(double a, double b) {

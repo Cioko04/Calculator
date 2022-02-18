@@ -1,10 +1,11 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ErrorHandler extends Exception{
+public class ErrorHandler extends RuntimeException{
    private static final Aggregator AGGREGATOR = new Aggregator();
+    private static final Interpreter INTERPRETER = new Interpreter();
+    private static final Calculator CALCULATOR = new Calculator();
 
     public double checkNumber(String numberToCheck) {
         double number;
@@ -69,18 +70,29 @@ public class ErrorHandler extends Exception{
         } while (continueLoop);
         return number;
     }
-    public boolean checkExpression(String inputExpression){
-        Pattern checkRighSign = Pattern.compile("[^a-z0-9().+/*=-]");
-        Pattern checkDuplicate = Pattern.compile("[.+/*=-]{2,}");
+    public String getExpression(){
+        Pattern checkRightSign = Pattern.compile("[^a-z0-9().+/*=^-]");
+        Pattern checkDuplicate = Pattern.compile("[.+/*=^-]{2,}");
         Pattern checkSignAppear = Pattern.compile("[a-z0-9]+");
-        boolean isCorrectExpression = true;
-        if (checkRighSign.matcher(inputExpression).find()
-                || checkDuplicate.matcher(inputExpression).find()
-                || !checkSignAppear.matcher(inputExpression).find()) {
-            System.out.println("Given expression doesn't match!\n" +
-                    "Please correct it!");
-            isCorrectExpression = false;
+        boolean isCorrectExpression;
+        String inputExpression;
+        do {
+            isCorrectExpression = true;
+            inputExpression = new Scanner(System.in).nextLine().replace(" ", "");
+            if (checkRightSign.matcher(inputExpression).find()
+                    || checkDuplicate.matcher(inputExpression).find()
+                    || !checkSignAppear.matcher(inputExpression).find()) {
+                System.out.println("Given expression doesn't match!\n" +
+                        "Please correct it!");
+                isCorrectExpression = false;
+            }
+        }while (!isCorrectExpression);
+        try {
+            return INTERPRETER.interpret(inputExpression);
+        } catch (RuntimeException exception) {
+            System.out.println("This isn't right expression!\n" +
+                    "Please correct it: ");
+            return CALCULATOR.calculate();
         }
-        return isCorrectExpression;
     }
 }

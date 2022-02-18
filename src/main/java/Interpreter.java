@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +12,7 @@ public class Interpreter {
     private String expressionToReplace;
     private String replacementExpression;
 
-    public String interpret(String inputExpression) {
+    public String interpret(String inputExpression) throws RuntimeException{
         if (!inputExpression.contains("=")) {
             if (inputExpression.contains("(")) {
                 return interpret(doExpressionWithBracket(inputExpression));
@@ -30,9 +31,7 @@ public class Interpreter {
         } else if (Pattern.compile("[a-z]").matcher(inputExpression).find()) {
             AGGREGATOR.addInputExpression(inputExpression);
             return CALCULATOR.calculate();
-        } else return "This isn't right value!";
-
-
+        } else throw new InputMismatchException();
     }
 
     private String doExpressionWithBracket(String inputExpression) {
@@ -42,13 +41,13 @@ public class Interpreter {
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
     }
 
-    private String getExpressionInBracket(String inputExpression) {
+    private String getExpressionInBracket(String inputExpression){
         return inputExpression.substring(
                 inputExpression.lastIndexOf("(") + 1
                 , inputExpression.indexOf(")", inputExpression.lastIndexOf("(")));
     }
 
-    private String doExpressionWithSqrt(String inputExpression) {
+    private String doExpressionWithSqrt(String inputExpression){
         expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
         replacementExpression = CALCULATOR.squareNumbers(getNumberToSquare(inputExpression));
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
@@ -62,7 +61,7 @@ public class Interpreter {
     }
 
     private String getNumberToSquare(String inputExpression) {
-        Pattern pattern = Pattern.compile("sqrt\\d*.\\d*");
+        Pattern pattern = Pattern.compile("sqrt[0-9]+[.0-9]*");
         Matcher matcher = pattern.matcher(inputExpression);
         return matcher.find() ?
                 inputExpression.substring(matcher.start(), matcher.end()).replace("sqrt", "")
@@ -88,7 +87,7 @@ public class Interpreter {
         return inputExpression.replace(expressionToReplace, replacementExpression);
     }
 
-    private int getIndexOfOperator(List<String> operators) {
+    private int getIndexOfOperator(List<String> operators){
         int index = 0;
         if (operators.contains("^")) {
             index = operators.indexOf("^");
@@ -106,7 +105,7 @@ public class Interpreter {
         return index;
     }
 
-    private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
+    private String getReplacementExpression(List<String> operands, List<String> operators, int index){
         double a = ERROR_HANDLER.checkNumber(operands.get(index - 1));
         double b = ERROR_HANDLER.checkNumber(operands.get(index));
         return switch (operators.get(index)) {

@@ -1,17 +1,17 @@
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    private static final Calculator calculator = new Calculator();
-    private static final Aggregator agregater = new Aggregator();
-    private static final ErrorHandler errorHandler = new ErrorHandler();
-    private String expressionToReplace;
-    private String replacementExpression;
+    private static final Calculator CALCULATOR = new Calculator();
+    private static final Aggregator AGGREGATOR = new Aggregator();
+    private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
 
-    public String interpret(String inputExpression) {
+    public String interpret(String inputExpression) throws RuntimeException {
         if (!inputExpression.contains("=")) {
             if (inputExpression.contains("(")) {
                 return interpret(doExpressionWithBracket(inputExpression));
@@ -24,18 +24,18 @@ public class Interpreter {
                 } else if (!Pattern.compile("[a-z]").matcher(inputExpression).find()) {
                     return inputExpression;
                 } else {
-                    return String.valueOf(errorHandler.checkNumber(inputExpression));
+                    return String.valueOf(ERROR_HANDLER.checkNumber(inputExpression));
                 }
             }
-        } else {
-            agregater.inputExpression(inputExpression);
-            return calculator.calculate();
-        }
-
-
+        } else if (Pattern.compile("[a-z]").matcher(inputExpression).find()) {
+            AGGREGATOR.addInputExpression(inputExpression);
+            return CALCULATOR.calculate(new Scanner(System.in).nextLine().replace(" ", ""));
+        } else throw new InputMismatchException();
     }
 
     private String doExpressionWithBracket(String inputExpression) {
+        String expressionToReplace;
+        String replacementExpression;
         inputExpression = addMultiplySign(inputExpression);
         expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
         replacementExpression = interpret(getExpressionInBracket(inputExpression));
@@ -49,12 +49,16 @@ public class Interpreter {
     }
 
     private String doExpressionWithSqrt(String inputExpression) {
+        String expressionToReplace;
+        String replacementExpression;
         expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
-        replacementExpression = calculator.squareNumbers(getNumberToSquare(inputExpression));
+        replacementExpression = CALCULATOR.squareNumber(getNumberToSquare(inputExpression));
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
     }
 
     private String doSimpleExpression(String inputExpression, List<String> operands) {
+        String expressionToReplace;
+        String replacementExpression;
         List<String> operators = getOperators(inputExpression);
         expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
         replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
@@ -62,7 +66,7 @@ public class Interpreter {
     }
 
     private String getNumberToSquare(String inputExpression) {
-        Pattern pattern = Pattern.compile("sqrt\\d*.\\d*");
+        Pattern pattern = Pattern.compile("sqrt[0-9]+[.0-9]*");
         Matcher matcher = pattern.matcher(inputExpression);
         return matcher.find() ?
                 inputExpression.substring(matcher.start(), matcher.end()).replace("sqrt", "")
@@ -107,14 +111,14 @@ public class Interpreter {
     }
 
     private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
-        double a = errorHandler.checkNumber(operands.get(index - 1));
-        double b = errorHandler.checkNumber(operands.get(index));
+        double a = ERROR_HANDLER.checkNumber(operands.get(index - 1));
+        double b = ERROR_HANDLER.checkNumber(operands.get(index));
         return switch (operators.get(index)) {
-            case "^" -> calculator.powerNumbers(a, b);
-            case "*" -> calculator.multiplyNumbers(a, b);
-            case "/" -> calculator.divideNumbers(a, b);
-            case "+" -> calculator.addNumbers(a, b);
-            case "-" -> calculator.subNumbers(a, b);
+            case "^" -> CALCULATOR.powerNumbers(a, b);
+            case "*" -> CALCULATOR.multiplyNumbers(a, b);
+            case "/" -> CALCULATOR.divideNumbers(a, b);
+            case "+" -> CALCULATOR.addNumbers(a, b);
+            case "-" -> CALCULATOR.subNumbers(a, b);
             default -> "";
         };
     }
@@ -132,6 +136,8 @@ public class Interpreter {
             }
         }
         return operands;
+
+
     }
 
     private List<String> getOperators(String inputExpression) {

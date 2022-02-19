@@ -2,16 +2,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Aggregator {
-    private static final Map<String, String> userAssignation = new HashMap<>();
-    private static final Interpreter interpreter = new Interpreter();
+    private static final Map<String, String> USER_ASSIGNATION = new HashMap<>();
+    private static final Interpreter INTERPRETER = new Interpreter();
 
-    public void inputExpression(String inputExpression) {
-        String[] splitInput = inputExpression.replace(" ", "").split("=");
-        userAssignation.put(splitInput[0], interpreter.interpret(splitInput[1]));
+    public void addInputExpression(String inputExpression) {
+        String[] splitInput = inputExpression.split("=");
+        USER_ASSIGNATION.put(splitInput[0], INTERPRETER.interpret(splitInput[1]));
     }
 
     public Map<String, String> getUserAssignation() {
-        return userAssignation;
+        return USER_ASSIGNATION;
     }
 
 }

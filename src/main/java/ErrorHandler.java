@@ -1,10 +1,11 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ErrorHandler extends Exception{
-   private static final Aggregator agregater = new Aggregator();
+public class ErrorHandler extends RuntimeException{
+   private static final Aggregator AGGREGATOR = new Aggregator();
+    private static final Interpreter INTERPRETER = new Interpreter();
+    private static final Calculator CALCULATOR = new Calculator();
 
     public double checkNumber(String numberToCheck) {
         double number;
@@ -12,7 +13,7 @@ public class ErrorHandler extends Exception{
             number = Double.parseDouble(numberToCheck);
         } catch (IllegalArgumentException exception) {
             try {
-                number = Double.parseDouble(agregater.getUserAssignation().get(numberToCheck));
+                number = Double.parseDouble(AGGREGATOR.getUserAssignation().get(numberToCheck));
             } catch (NullPointerException pointerException) {
                 System.out.println("There is no number assigned to this variable!\n" +
                         "Please enter value: ");
@@ -69,13 +70,13 @@ public class ErrorHandler extends Exception{
         } while (continueLoop);
         return number;
     }
-    public boolean checkExpression(String inputExpression){
-        Pattern pattern = Pattern.compile("[^a-z0-9()+/*=-]");
-        Matcher matcher = pattern.matcher(inputExpression);
-        if (matcher.find()) {
-            System.out.println("Given expression doesn't match!\n" +
-                    "Please correct it!");
+    public String getExpression(String inputExpression){
+        try {
+            return INTERPRETER.interpret(inputExpression);
+        } catch (RuntimeException exception) {
+            System.out.println("This isn't right expression!\n" +
+                    "Please correct it: ");
+            return CALCULATOR.calculate(new Scanner(System.in).nextLine().replace(" ", ""));
         }
-        return matcher.find();
     }
 }

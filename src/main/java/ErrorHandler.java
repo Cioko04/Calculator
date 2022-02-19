@@ -70,29 +70,13 @@ public class ErrorHandler extends RuntimeException{
         } while (continueLoop);
         return number;
     }
-    public String getExpression(){
-        Pattern checkRightSign = Pattern.compile("[^a-z0-9().+/*=^-]");
-        Pattern checkDuplicate = Pattern.compile("[.+/*=^-]{2,}");
-        Pattern checkSignAppear = Pattern.compile("[a-z0-9]+");
-        boolean isCorrectExpression;
-        String inputExpression;
-        do {
-            isCorrectExpression = true;
-            inputExpression = new Scanner(System.in).nextLine().replace(" ", "");
-            if (checkRightSign.matcher(inputExpression).find()
-                    || checkDuplicate.matcher(inputExpression).find()
-                    || !checkSignAppear.matcher(inputExpression).find()) {
-                System.out.println("Given expression doesn't match!\n" +
-                        "Please correct it!");
-                isCorrectExpression = false;
-            }
-        }while (!isCorrectExpression);
+    public String getExpression(String inputExpression){
         try {
             return INTERPRETER.interpret(inputExpression);
         } catch (RuntimeException exception) {
             System.out.println("This isn't right expression!\n" +
                     "Please correct it: ");
-            return CALCULATOR.calculate();
+            return CALCULATOR.calculate(new Scanner(System.in).nextLine().replace(" ", ""));
         }
     }
 }

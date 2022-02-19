@@ -6,11 +6,9 @@ public class Calculator {
     private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
 
 
-    public String calculate() {
-            return ERROR_HANDLER.getExpression();
-
+    public String calculate(String inputExpression) {
+            return ERROR_HANDLER.getExpression(inputExpression);
     }
-
     public String addNumbers(double a, double b) {
         return String.valueOf(BigDecimal.valueOf(a).add(BigDecimal.valueOf(b)));
     }
@@ -31,7 +29,7 @@ public class Calculator {
         return String.valueOf(BigDecimal.valueOf(a).pow((int) b));
     }
 
-    public String squareNumbers(String number) {
+    public String squareNumber(String number) {
         return String.valueOf(BigDecimal.valueOf(ERROR_HANDLER.checkSqrt(Double.parseDouble(number))).sqrt(MathContext.UNLIMITED));
     }
 }

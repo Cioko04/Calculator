@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -9,10 +10,8 @@ public class Interpreter {
     private static final Calculator CALCULATOR = new Calculator();
     private static final Aggregator AGGREGATOR = new Aggregator();
     private static final ErrorHandler ERROR_HANDLER = new ErrorHandler();
-    private String expressionToReplace;
-    private String replacementExpression;
 
-    public String interpret(String inputExpression) throws RuntimeException{
+    public String interpret(String inputExpression) throws RuntimeException {
         if (!inputExpression.contains("=")) {
             if (inputExpression.contains("(")) {
                 return interpret(doExpressionWithBracket(inputExpression));
@@ -30,30 +29,36 @@ public class Interpreter {
             }
         } else if (Pattern.compile("[a-z]").matcher(inputExpression).find()) {
             AGGREGATOR.addInputExpression(inputExpression);
-            return CALCULATOR.calculate();
+            return CALCULATOR.calculate(new Scanner(System.in).nextLine().replace(" ", ""));
         } else throw new InputMismatchException();
     }
 
     private String doExpressionWithBracket(String inputExpression) {
+        String expressionToReplace;
+        String replacementExpression;
         inputExpression = addMultiplySign(inputExpression);
         expressionToReplace = "(" + getExpressionInBracket(inputExpression) + ")";
         replacementExpression = interpret(getExpressionInBracket(inputExpression));
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
     }
 
-    private String getExpressionInBracket(String inputExpression){
+    private String getExpressionInBracket(String inputExpression) {
         return inputExpression.substring(
                 inputExpression.lastIndexOf("(") + 1
                 , inputExpression.indexOf(")", inputExpression.lastIndexOf("(")));
     }
 
-    private String doExpressionWithSqrt(String inputExpression){
+    private String doExpressionWithSqrt(String inputExpression) {
+        String expressionToReplace;
+        String replacementExpression;
         expressionToReplace = "sqrt" + getNumberToSquare(inputExpression);
-        replacementExpression = CALCULATOR.squareNumbers(getNumberToSquare(inputExpression));
+        replacementExpression = CALCULATOR.squareNumber(getNumberToSquare(inputExpression));
         return updateExpression(expressionToReplace, replacementExpression, inputExpression);
     }
 
     private String doSimpleExpression(String inputExpression, List<String> operands) {
+        String expressionToReplace;
+        String replacementExpression;
         List<String> operators = getOperators(inputExpression);
         expressionToReplace = getExpressionToReplace(operands, operators, getIndexOfOperator(operators));
         replacementExpression = getReplacementExpression(operands, operators, getIndexOfOperator(operators));
@@ -87,7 +92,7 @@ public class Interpreter {
         return inputExpression.replace(expressionToReplace, replacementExpression);
     }
 
-    private int getIndexOfOperator(List<String> operators){
+    private int getIndexOfOperator(List<String> operators) {
         int index = 0;
         if (operators.contains("^")) {
             index = operators.indexOf("^");
@@ -105,7 +110,7 @@ public class Interpreter {
         return index;
     }
 
-    private String getReplacementExpression(List<String> operands, List<String> operators, int index){
+    private String getReplacementExpression(List<String> operands, List<String> operators, int index) {
         double a = ERROR_HANDLER.checkNumber(operands.get(index - 1));
         double b = ERROR_HANDLER.checkNumber(operands.get(index));
         return switch (operators.get(index)) {
@@ -136,7 +141,6 @@ public class Interpreter {
     }
 
     private List<String> getOperators(String inputExpression) {
-
         List<String> operators = new ArrayList<>(List.of(inputExpression.split("[\\d\\.w\\w]")));
         operators.set(0, "");
         operators = new ArrayList<>(
